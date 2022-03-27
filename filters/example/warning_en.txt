@@ -1,0 +1,1 @@
+The _XX files will contain localized warnings, if any.  MuWire will try to find a warning whose locale matches that of the user, if it fails it will fall back to the warning in the main warning.txt file.

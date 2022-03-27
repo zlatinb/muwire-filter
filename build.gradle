@@ -1,0 +1,45 @@
+import java.util.zip.*
+
+plugins {
+    id 'maven-publish'
+}
+
+
+
+File build = file("build")
+if (build.exists())
+    build.delete()
+build.mkdirs()
+
+File filtersDir = file("filters")
+filtersDir.listFiles().each { directory ->
+
+    // extract version
+    String version = (new File(directory, "version.txt")).text.trim()
+
+
+    def baos = new ByteArrayOutputStream()
+    def zaos = new ZipOutputStream(baos)
+    zaos.putNextEntry(new ZipEntry("${directory.getName()}/"))
+
+    // just add everything in the zip
+    directory.listFiles().each { f ->
+        zaos.putNextEntry(new ZipEntry("${directory.getName()}/${f.getName()}"))
+        zaos.write(f.bytes)
+    }
+
+    zaos.close()
+
+    File artifactFile = new File(file("build"), "${directory.getName()}-${version}.zip")
+    artifactFile.setBytes(baos.toByteArray())
+
+    def pub = publishing.publications.create(directory.getName(), MavenPublication)
+    pub.setGroupId("com.muwire.filters")
+    pub.setArtifactId(directory.getName())
+    pub.setVersion(version)
+
+    // create artifact
+    pub.artifact(artifactFile, { 
+         extension = "zip"
+    })
+}              
